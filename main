@@ -24,12 +24,12 @@ def find_cogs():
     cogs = new_pos['Unit price'] * new_pos['Quantity'] - new_pos['gross income']
     return cogs
     
+#dropping entire rows with NaN/NA for branch, product line and date
+new_pos = pos.dropna(how='any', subset=['Branch','Product line', 'Date'])
+
 #check for specific data
 a = ['565-91-4567']
 new_pos[new_pos['Invoice ID'].isin(a)]
-    
-#dropping entire rows with NaN/NA for branch, product line and date
-new_pos = pos.dropna(how='any', subset=['Branch','Product line', 'Date'])
 
 #populating NA value in rating with mean
 new_pos['Rating'].fillna(new_pos['Rating'].mean(), inplace=True)
