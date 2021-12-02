@@ -2,6 +2,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 #reading file
 pos = pd.read_csv('supermarket_sales.csv')
@@ -43,3 +44,44 @@ new_pos['Quantity'].fillna(find_quantity(), inplace=True)
 new_pos['Unit price'].fillna(find_unit_price(), inplace=True)
 new_pos['gross income'].fillna(find_gross_income(), inplace=True)
 new_pos['cogs'].fillna(find_cogs(), inplace=True)
+
+#month sales
+total_month_sales = new_pos.loc[:, ['Branch', 'Product line', 'Total','Date']]
+total_month_sales['Month'] = total_month_sales['Date'].str[0:1]
+results = total_month_sales.groupby('Month').sum()
+months = range(1,4)
+plt.bar(months,results['Total'], width = 0.5)
+plt.xticks(months)
+plt.ylabel('Total sales ($)')
+plt.xlabel('Month')
+plt.show()
+
+#Branch sales for each month
+results = total_month_sales.groupby(['Month','Branch']).sum()
+results.unstack().plot()
+plt.ylabel(' Total sales ($)')
+plt.show()
+
+product_line = new_pos.groupby('Product line')
+quantity = product_line.sum()['Quantity']
+products = [product for product, df in product_line]
+plt.bar(products, quantity)
+plt.xticks(products, rotation = 'vertical')
+plt.ylabel(' Total Sales quantity')
+plt.show()
+
+#sales by gender
+male = new_pos['Gender'][new_pos['Gender'].str.contains('Male')].count()
+female = new_pos['Gender'][new_pos['Gender'].str.contains('Female')].count()
+gender = np.array([male, female])
+gender_labels = ['Male', 'Female']
+plt.pie(gender, labels = gender_labels, startangle = 90)
+plt.show()
+
+#rating for each branch #box plot
+sns.boxplot(data=new_pos, x='Branch', y='Rating', width = 0.5)
+plt.show()
+
+#unit price for each product
+sns.boxplot(data=new_pos, x='Unit price', y='Product line', width = 0.5)
+plt.show()
