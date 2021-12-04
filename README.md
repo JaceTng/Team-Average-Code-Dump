@@ -99,12 +99,12 @@ explodeTuple = (0.2, 0.0, 0.0)
 plt.pie(payment_type, labels = payment_labels, colors = colors, explode=explodeTuple, autopct='%1.2f%%', shadow = True, startangle=120)
 plt.show()
 
-##need to fix - quanitity to be totalled up....
-##https://stackoverflow.com/questions/28236305/how-do-i-sum-values-in-a-column-that-match-a-given-condition-using-pandas
+#Product Sales per Hour
 new_pos['Time'] = pd.to_datetime(new_pos['Time'])
 new_pos['Hour'] = (new_pos['Time']).dt.hour
 new_pos['Hour'].unique()
-sns.lineplot(x = 'Hour',  y = 'Quantity',data =new_pos).set_title("Product Sales per Hour")
+find_total_quantity = new_pos.groupby(['Hour']).sum()
+sns.lineplot(x = 'Hour',  y = 'Quantity',data = find_total_quantity).set_title("Product Sales per Hour")
 plt.show()
 
 total_month_sales = new_pos.loc[:, ['Branch', 'Product line', 'Quantity']]
