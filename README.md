@@ -106,6 +106,10 @@ new_pos['Hour'].unique()
 find_total_quantity = new_pos.groupby(['Hour']).sum()
 sns.lineplot(x = 'Hour',  y = 'Quantity',data = find_total_quantity).set_title("Product Sales per Hour")
 plt.show()
+#Product Sales per Hour for each branch
+find_total_quantity = new_pos.groupby(['Hour','Branch']).sum()
+sns.lineplot(x = 'Hour',  y = 'Quantity',data = find_total_quantity, hue = 'Branch', palette="flare").set_title("Product Sales per Hour")
+plt.show()
 
 total_month_sales = new_pos.loc[:, ['Branch', 'Product line', 'Quantity']]
 results = total_month_sales.groupby(['Product line','Branch']).sum()
