@@ -1,2 +1,15 @@
+#importing packages
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
 
-hello from the otah side
+#reading file
+tb= pd.read_csv(r'D:\Downloads\BAIG HACKATHON\supermarket_sales.csv')
+print (tb)
+
+#initial index to 1
+tb.index += 1
+tb.head()
+
+
+
