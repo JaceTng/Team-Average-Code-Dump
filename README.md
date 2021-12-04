@@ -24,11 +24,7 @@ def find_gross_income():
 def find_cogs():
     cogs = new_pos['Unit price'] * new_pos['Quantity'] - new_pos['gross income']
     return cogs
-    
-#check for specific data
-a = ['565-91-4567']
-new_pos[new_pos['Invoice ID'].isin(a)]
-    
+
 #dropping entire rows with NaN/NA for branch, product line and date
 new_pos = pos.dropna(how='any', subset=['Branch','Product line', 'Date'])
 
@@ -65,9 +61,8 @@ plt.show()
 product_line = new_pos.groupby('Product line')
 quantity = product_line.sum()['Quantity']
 products = [product for product, df in product_line]
-plt.bar(products, quantity)
-plt.xticks(products, rotation = 'vertical')
-plt.ylabel(' Total Sales quantity')
+plt.barh(products, quantity)
+plt.xlabel('Sales quantity')
 plt.show()
 
 #sales by gender
@@ -79,9 +74,45 @@ plt.pie(gender, labels = gender_labels, startangle = 90)
 plt.show()
 
 #rating for each branch #box plot
-sns.boxplot(data=new_pos, x='Branch', y='Rating', width = 0.5)
+colors = ('Purple', 'Blue', 'Red')
+box = sns.boxplot(data=new_pos, x='Branch', y='Rating', width = 0.5, palette=colors, medianprops=dict(color="gold"))
 plt.show()
 
 #unit price for each product
 sns.boxplot(data=new_pos, x='Unit price', y='Product line', width = 0.5)
+plt.show()
+
+member = new_pos['Customer type'][new_pos['Customer type'].str.contains('Member')].count()
+non_member = new_pos['Customer type'][new_pos['Customer type'].str.contains('Normal')].count()
+customer_type = np.array([member, non_member])
+member_labels = ['Member', 'Non member']
+plt.pie(customer_type, labels = member_labels, startangle = 90)
+plt.show()
+
+cash = new_pos['Payment'][new_pos['Payment'].str.contains('Cash')].count()
+ewallet = new_pos['Payment'][new_pos['Payment'].str.contains('Ewallet')].count()
+credit_card = new_pos['Payment'][new_pos['Payment'].str.contains('Credit card')].count()
+payment_type = np.array([cash, ewallet, credit_card])
+payment_labels = ['Cash', 'E-wallet', ' Credit card']
+colors = ('cyan', 'Aquamarine', 'gold')
+explodeTuple = (0.2, 0.0, 0.0)
+plt.pie(payment_type, labels = payment_labels, colors = colors, explode=explodeTuple, autopct='%1.2f%%', shadow = True, startangle=120)
+plt.show()
+
+##need to fix - quanitity to be totalled up....
+##https://stackoverflow.com/questions/28236305/how-do-i-sum-values-in-a-column-that-match-a-given-condition-using-pandas
+new_pos['Time'] = pd.to_datetime(new_pos['Time'])
+new_pos['Hour'] = (new_pos['Time']).dt.hour
+new_pos['Hour'].unique()
+sns.lineplot(x = 'Hour',  y = 'Quantity',data =new_pos).set_title("Product Sales per Hour")
+plt.show()
+
+total_month_sales = new_pos.loc[:, ['Branch', 'Product line', 'Quantity']]
+results = total_month_sales.groupby(['Product line','Branch']).sum()
+quantity_branch = results.unstack()
+legend_color = ['red', 'pink', 'purple']
+quantity_branch.plot(kind='barh', stacked = True, color = legend_color)
+plt.xlabel('Quantity')
+legend = ['Branch A', 'Branch B', 'Branch C']
+plt.legend(legend, bbox_to_anchor=(1,1), loc="upper left")
 plt.show()
