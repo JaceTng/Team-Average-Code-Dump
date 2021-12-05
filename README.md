@@ -46,40 +46,66 @@ total_month_sales = new_pos.loc[:, ['Branch', 'Product line', 'Total','Date']]
 total_month_sales['Month'] = total_month_sales['Date'].str[0:1]
 results = total_month_sales.groupby('Month').sum()
 months = range(1,4)
-plt.bar(months,results['Total'], width = 0.5)
+color = ['red', 'pink', 'purple']
+plt.bar(months,results['Total'], width = 0.5, color = color)
 plt.xticks(months)
 plt.ylabel('Total sales ($)')
 plt.xlabel('Month')
+plt.title("Month sales", fontsize=16, color = 'k')
 plt.show()
 
 #Branch sales for each month
 results = total_month_sales.groupby(['Month','Branch']).sum()
 results.unstack().plot()
 plt.ylabel(' Total sales ($)')
+plt.title("Branch sales for each month", fontsize=16, color = 'k')
 plt.show()
 
 product_line = new_pos.groupby('Product line')
 quantity = product_line.sum()['Quantity']
 products = [product for product, df in product_line]
-plt.barh(products, quantity)
+color = ['red', 'pink', 'purple', 'orange', 'green', 'blue']
+plt.barh(products, quantity, color = color)
 plt.xlabel('Sales quantity')
+plt.title("Product sales", fontsize=16, color = 'k')
 plt.show()
 
 #sales by gender
 male = new_pos['Gender'][new_pos['Gender'].str.contains('Male')].count()
 female = new_pos['Gender'][new_pos['Gender'].str.contains('Female')].count()
 gender = np.array([male, female])
-gender_labels = ['Male', 'Female']
-plt.pie(gender, labels = gender_labels, startangle = 90)
+labels = ['Male', 'Female']
+plt.gca().axis("equal")
+wedges, texts = plt.pie(gender, labels = labels, startangle = 90, wedgeprops = { 'linewidth': 2, "edgecolor" :"k","fill":False})
+plt.title("Gender", fontsize=16, color = 'k')
+
+def img_to_pie( fn, wedge, xy, zoom=1, ax = None):
+    if ax==None: ax=plt.gca()
+    im = plt.imread(fn, format='png')
+    path = wedge.get_path()
+    patch = PathPatch(path, facecolor='none')
+    ax.add_patch(patch)
+    imagebox = OffsetImage(im, zoom=zoom, clip_path=patch, zorder=-10)
+    ab = AnnotationBbox(imagebox, xy, xycoords='data', pad=0, frameon=False)
+    ax.add_artist(ab)
+
+positions = [(-0.5,0),(0.5,0)]
+zooms = [0.2,0.1]
+
+for i in range(2):
+    fn = "{}.png".format(labels[i].lower())
+    img_to_pie(fn, wedges[i], xy=positions[i], zoom=zooms[i] )
+    wedges[i].set_zorder(5)
+    
 plt.show()
 
 #rating for each branch #box plot
 colors = ('Purple', 'Blue', 'Red')
-box = sns.boxplot(data=new_pos, x='Branch', y='Rating', width = 0.5, palette=colors, medianprops=dict(color="gold"))
+box = sns.boxplot(data=new_pos, x='Branch', y='Rating', width = 0.5, palette=colors, medianprops=dict(color="gold")).set(title = 'Branch rating')
 plt.show()
 
-#unit price for each product
-sns.boxplot(data=new_pos, x='Unit price', y='Product line', width = 0.5)
+#Product purchases
+sns.boxplot(data=new_pos, x='Quantity', y='Product line', width = 0.5).set(title = 'Product purchases')
 plt.show()
 
 member = new_pos['Customer type'][new_pos['Customer type'].str.contains('Member')].count()
@@ -87,6 +113,7 @@ non_member = new_pos['Customer type'][new_pos['Customer type'].str.contains('Nor
 customer_type = np.array([member, non_member])
 member_labels = ['Member', 'Non member']
 plt.pie(customer_type, labels = member_labels, startangle = 90)
+plt.title('Membership', fontsize=16, color = 'k')
 plt.show()
 
 cash = new_pos['Payment'][new_pos['Payment'].str.contains('Cash')].count()
@@ -95,8 +122,18 @@ credit_card = new_pos['Payment'][new_pos['Payment'].str.contains('Credit card')]
 payment_type = np.array([cash, ewallet, credit_card])
 payment_labels = ['Cash', 'E-wallet', ' Credit card']
 colors = ('cyan', 'Aquamarine', 'gold')
-explodeTuple = (0.2, 0.0, 0.0)
-plt.pie(payment_type, labels = payment_labels, colors = colors, explode=explodeTuple, autopct='%1.2f%%', shadow = True, startangle=120)
+explodeTuple = (0.1, 0.0, 0.0)
+fig, ax = plt.subplots(figsize=(6, 6))
+patches, texts, pcts = ax.pie(payment_type, labels = payment_labels, colors = colors, explode=explodeTuple, pctdistance=0.75, autopct='%1.2f%%', shadow = True, startangle=120)
+centre_circle = plt.Circle((0, 0), 0.60, fc='white')
+for i, patch in enumerate(patches):
+  texts[i].set_color(patch.get_facecolor())
+plt.setp(pcts, color='Navy')
+plt.setp(texts, fontweight=300)
+ax.set_title('Payment Type', fontsize=16, color = 'Red')
+plt.tight_layout()
+fig = plt.gcf()
+fig.gca().add_artist(centre_circle)
 plt.show()
 
 #Product Sales per Hour
@@ -108,15 +145,16 @@ sns.lineplot(x = 'Hour',  y = 'Quantity',data = find_total_quantity).set_title("
 plt.show()
 #Product Sales per Hour for each branch
 find_total_quantity = new_pos.groupby(['Hour','Branch']).sum()
-sns.lineplot(x = 'Hour',  y = 'Quantity',data = find_total_quantity, hue = 'Branch', palette="flare").set_title("Product Sales per Hour")
+sns.lineplot(x = 'Hour',  y = 'Quantity',data = find_total_quantity, hue = 'Branch', palette="flare").set_title("Branch Product Sales per Hour")
 plt.show()
 
 total_month_sales = new_pos.loc[:, ['Branch', 'Product line', 'Quantity']]
 results = total_month_sales.groupby(['Product line','Branch']).sum()
 quantity_branch = results.unstack()
 legend_color = ['red', 'pink', 'purple']
-quantity_branch.plot(kind='barh', stacked = True, color = legend_color)
+quantity_branch.plot(kind='barh', color = legend_color)
 plt.xlabel('Quantity')
 legend = ['Branch A', 'Branch B', 'Branch C']
 plt.legend(legend, bbox_to_anchor=(1,1), loc="upper left")
+plt.title('Demand for product line', fontsize=16, color = 'k')
 plt.show()
