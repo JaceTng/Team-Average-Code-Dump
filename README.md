@@ -61,6 +61,7 @@ plt.ylabel(' Total sales ($)')
 plt.title("Branch sales for each month", fontsize=16, color = 'k')
 plt.show()
 
+#Product sales
 product_line = new_pos.groupby('Product line')
 quantity = product_line.sum()['Quantity']
 products = [product for product, df in product_line]
@@ -89,8 +90,8 @@ def img_to_pie( fn, wedge, xy, zoom=1, ax = None):
     ab = AnnotationBbox(imagebox, xy, xycoords='data', pad=0, frameon=False)
     ax.add_artist(ab)
 
-positions = [(-0.5,0),(0.5,0)]
-zooms = [0.2,0.1]
+positions = [(-0.4,0),(0.5,0)]
+zooms = [0.27,0.1]
 
 for i in range(2):
     fn = "{}.png".format(labels[i].lower())
@@ -108,6 +109,7 @@ plt.show()
 sns.boxplot(data=new_pos, x='Quantity', y='Product line', width = 0.5).set(title = 'Product purchases')
 plt.show()
 
+#Member demographic
 member = new_pos['Customer type'][new_pos['Customer type'].str.contains('Member')].count()
 non_member = new_pos['Customer type'][new_pos['Customer type'].str.contains('Normal')].count()
 customer_type = np.array([member, non_member])
@@ -116,6 +118,7 @@ plt.pie(customer_type, labels = member_labels, startangle = 90)
 plt.title('Membership', fontsize=16, color = 'k')
 plt.show()
 
+#Payment type
 cash = new_pos['Payment'][new_pos['Payment'].str.contains('Cash')].count()
 ewallet = new_pos['Payment'][new_pos['Payment'].str.contains('Ewallet')].count()
 credit_card = new_pos['Payment'][new_pos['Payment'].str.contains('Credit card')].count()
@@ -148,6 +151,7 @@ find_total_quantity = new_pos.groupby(['Hour','Branch']).sum()
 sns.lineplot(x = 'Hour',  y = 'Quantity',data = find_total_quantity, hue = 'Branch', palette="flare").set_title("Branch Product Sales per Hour")
 plt.show()
 
+#Demand for product line
 total_month_sales = new_pos.loc[:, ['Branch', 'Product line', 'Quantity']]
 results = total_month_sales.groupby(['Product line','Branch']).sum()
 quantity_branch = results.unstack()
@@ -157,4 +161,48 @@ plt.xlabel('Quantity')
 legend = ['Branch A', 'Branch B', 'Branch C']
 plt.legend(legend, bbox_to_anchor=(1,1), loc="upper left")
 plt.title('Demand for product line', fontsize=16, color = 'k')
+plt.show()
+
+#Time trend in gross income
+fig, ax = plt.subplots(figsize=(9,9))
+new_pos['Date'] = pd.to_datetime(new_pos['Date'], errors='coerce')
+date = new_pos.groupby(new_pos.Date).mean().index
+gross_income = new_pos.groupby(new_pos.Date).mean()['gross income']
+sns.lineplot(x= date, y = gross_income, ax=ax, color='red')
+
+def annot_max(x,y, ax=None):
+    xmax = x[np.argmax(y)]
+    ymax = y.max()
+    text= "x={:%Y-%m-%d}, y={:.2f}".format(xmax, ymax)
+    if not ax:
+        ax=plt.gca()
+    bbox_props = dict(boxstyle="square,pad=0.5", fc="w", ec="k", lw=1)
+    arrowprops=dict(arrowstyle="->",connectionstyle="angle,angleA=0,angleB=15", color='navy')
+    kw = dict(xycoords='data',textcoords="axes fraction",
+              arrowprops=arrowprops, bbox=bbox_props, ha="right")
+    ax.annotate(text, xy=(xmax, ymax), xytext=(0.8,0.9), **kw, color='navy')
+
+annot_max(date, gross_income)
+sns.set_palette("PuBuGn_d")
+plt.title('Gross income', fontsize=16, color = 'k')
+plt.tight_layout
+plt.show()
+
+#Gross income by product
+product_income=new_pos[["Product line", "gross income"]].groupby(['Product line'], as_index=False).sum().sort_values(by='gross income', ascending=False)
+plt.figure(figsize=(12,6))
+sns.barplot(x='Product line', y='gross income', data=product_income)
+plt.title('Gross income by product', fontsize=16, color = 'k')
+plt.show()
+
+#Product cost
+product_cogs=new_pos[["Product line", "cogs"]].groupby(['Product line'], as_index=False).sum().sort_values(by='cogs', ascending=False)
+plt.figure(figsize=(12,6))
+sns.barplot(x='Product line', y='cogs', data=product_cogs)
+plt.title('Product cost', fontsize=16, color = 'k')
+plt.show()
+
+#Correlation between variables
+sns.heatmap(np.round(new_pos.corr(),2), annot=True, cmap = 'rainbow')
+plt.title('Correlation between variables', fontsize=14, color = 'k')
 plt.show()
