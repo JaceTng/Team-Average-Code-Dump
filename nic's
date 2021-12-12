@@ -56,16 +56,15 @@ plt.legend()
 sns.boxplot(x=new_pos['Branch'], y=new_pos['gross income'])
 
 #Gross Income for Each Branch (Line Graph)
-branch_monthly_gross income = new_pos.loc[:, ['Branch', 'gross income','Date']]
-branch_monthly_gross income['Month'] = branch_monthly_gross income['Date'].str[0:1]
-results = branch_monthly_gross income.groupby('Month').sum()
+branch_monthly_grossincome = new_pos.loc[:, ['Branch', 'gross income','Date']]
+branch_monthly_grossincome['Month'] = branch_monthly_grossincome['Date'].str[0:1]
+results = branch_monthly_grossincome.groupby('Month').sum()
 months = range(1,4)
 
-results = branch_monthly_gross income(['Month','Branch']).sum()
+results = branch_monthly_grossincome(['Month','Branch']).sum()
 results.unstack().plot()
 plt.ylabel(' Total sales ($)')
 plt.show()
 
 #Gender and Gross Income Distribution
 sns.boxplot(x=new_pos['Gender'], y=new_pos['gross income'])
-
