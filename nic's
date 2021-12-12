@@ -45,8 +45,27 @@ new_pos['cogs'].fillna(find_cogs(), inplace=True)
 a = ['565-91-4567']
 new_pos[new_pos['Invoice ID'].isin(a)]
 
-new_pos['Time'] = pd.to_datetime(new_pos['Time'])
-new_pos['Hour'] = (new_pos['Time']).dt.hour
-new_pos['Hour'].unique()
+#Customer Rating Distribution
+sns.displot(new_pos['Rating'], kde=True)
+plt.axvline(x=np.mean(new_pos['Rating']), c='red', ls='--', label='mean')
+plt.axvline(x=np.percentile(new_pos['Rating'],25),c='green', ls='--', label = '25th percentile:Q1')
+plt.axvline(x=np.percentile(new_pos['Rating'],75),c='orange', ls='--',label = '75th percentile:Q3' )
+plt.legend()
 
-sns.lineplot(x="Hour",  y = 'Quantity',data =new_pos).set_title("Product Sales per Hour")
+#Gross Income for Each Branch
+sns.boxplot(x=new_pos['Branch'], y=new_pos['gross income'])
+
+#Gross Income for Each Branch (Line Graph)
+branch_monthly_gross income = new_pos.loc[:, ['Branch', 'gross income','Date']]
+branch_monthly_gross income['Month'] = branch_monthly_gross income['Date'].str[0:1]
+results = branch_monthly_gross income.groupby('Month').sum()
+months = range(1,4)
+
+results = branch_monthly_gross income(['Month','Branch']).sum()
+results.unstack().plot()
+plt.ylabel(' Total sales ($)')
+plt.show()
+
+#Gender and Gross Income Distribution
+sns.boxplot(x=new_pos['Gender'], y=new_pos['gross income'])
+
