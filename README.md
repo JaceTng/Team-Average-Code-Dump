@@ -2,14 +2,16 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
+from matplotlib.patches import PathPatch
+from matplotlib.offsetbox import OffsetImage, AnnotationBbox
+import seaborn as sns; sns.set()
+import datetime
 
 #reading file
 pos = pd.read_csv('supermarket_sales.csv')
 
 #initial index to 1
 pos.index += 1
-pos.head()
 
 # to find missing values
 def find_quantity():
@@ -41,14 +43,19 @@ new_pos['Unit price'].fillna(find_unit_price(), inplace=True)
 new_pos['gross income'].fillna(find_gross_income(), inplace=True)
 new_pos['cogs'].fillna(find_cogs(), inplace=True)
 
+#Change to datetime format for Date and Time column
+new_pos['Date'] = pd.to_datetime(new_pos['Date'], errors='coerce')
+new_pos['Time'] = pd.to_datetime(new_pos['Time'])
+
 #month sales
 total_month_sales = new_pos.loc[:, ['Branch', 'Product line', 'Total','Date']]
-total_month_sales['Month'] = total_month_sales['Date'].str[0:1]
+total_month_sales['Month'] = total_month_sales['Date'].dt.month
 results = total_month_sales.groupby('Month').sum()
 months = range(1,4)
 color = ['red', 'pink', 'purple']
 plt.bar(months,results['Total'], width = 0.5, color = color)
-plt.xticks(months)
+my_xticks = ['Jan','Feb','Mar']
+plt.xticks(months, my_xticks)
 plt.ylabel('Total sales ($)')
 plt.xlabel('Month')
 plt.title("Month sales", fontsize=16, color = 'k')
@@ -59,6 +66,32 @@ results = total_month_sales.groupby(['Month','Branch']).sum()
 results.unstack().plot()
 plt.ylabel(' Total sales ($)')
 plt.title("Branch sales for each month", fontsize=16, color = 'k')
+legend = ['Branch A', 'Branch B', 'Branch C']
+plt.legend(legend, bbox_to_anchor=(1,1), loc="upper left")
+plt.show()
+
+#Demand for product line
+total_month_sales = new_pos.loc[:, ['Branch', 'Product line', 'Quantity']]
+results = total_month_sales.groupby(['Product line','Branch']).sum()
+quantity_branch = results.unstack()
+legend_color = ['red', 'pink', 'purple']
+quantity_branch.plot(kind='barh', color = legend_color)
+plt.xlabel('Quantity')
+legend = ['Branch A', 'Branch B', 'Branch C']
+plt.legend(legend, bbox_to_anchor=(1,1), loc="upper left")
+plt.title('Demand for product line', fontsize=16, color = 'k')
+plt.show()
+
+#Demand for product line
+total_month_sales = new_pos.loc[:, ['Branch', 'Product line', 'Quantity']]
+results = total_month_sales.groupby(['Product line','Branch']).sum()
+quantity_branch = results.unstack()
+legend_color = ['red', 'pink', 'purple']
+quantity_branch.plot(kind='barh', color = legend_color)
+plt.xlabel('Quantity')
+legend = ['Branch A', 'Branch B', 'Branch C']
+plt.legend(legend, bbox_to_anchor=(1,1), loc="upper left")
+plt.title('Demand for product line', fontsize=16, color = 'k')
 plt.show()
 
 #Product sales
@@ -90,8 +123,8 @@ def img_to_pie( fn, wedge, xy, zoom=1, ax = None):
     ab = AnnotationBbox(imagebox, xy, xycoords='data', pad=0, frameon=False)
     ax.add_artist(ab)
 
-positions = [(-0.4,0),(0.5,0)]
-zooms = [0.27,0.1]
+positions = [(-0.4,0),(0.43,0)]
+zooms = [0.27,0.053]
 
 for i in range(2):
     fn = "{}.png".format(labels[i].lower())
@@ -102,7 +135,7 @@ plt.show()
 
 #rating for each branch #box plot
 colors = ('Purple', 'Blue', 'Red')
-box = sns.boxplot(data=new_pos, x='Branch', y='Rating', width = 0.5, palette=colors, medianprops=dict(color="gold")).set(title = 'Branch rating')
+sns.boxplot(data=new_pos, x='Branch', y='Rating',order=["A", "B","C"], width = 0.5, palette=colors, medianprops=dict(color="gold")).set(title = 'Branch rating')
 plt.show()
 
 #Product purchases
@@ -140,8 +173,7 @@ fig.gca().add_artist(centre_circle)
 plt.show()
 
 #Product Sales per Hour
-new_pos['Time'] = pd.to_datetime(new_pos['Time'])
-new_pos['Hour'] = (new_pos['Time']).dt.hour
+new_pos['Hour'] = new_pos['Time'].dt.hour
 new_pos['Hour'].unique()
 find_total_quantity = new_pos.groupby(['Hour']).sum()
 sns.lineplot(x = 'Hour',  y = 'Quantity',data = find_total_quantity).set_title("Product Sales per Hour")
@@ -163,9 +195,65 @@ plt.legend(legend, bbox_to_anchor=(1,1), loc="upper left")
 plt.title('Demand for product line', fontsize=16, color = 'k')
 plt.show()
 
+#Gross income by product
+product_income=new_pos[["Product line", "gross income"]].groupby(['Product line'], as_index=False).sum().sort_values(by='gross income', ascending=False)
+plt.figure(figsize=(12,6))
+sns.barplot(x='Product line', y='gross income', data=product_income, palette = "hls")
+plt.title('Gross income by product', fontsize=16, color = 'k')
+plt.show()
+
+#Product cost
+product_cogs=new_pos[["Product line", "cogs"]].groupby(['Product line'], as_index=False).sum().sort_values(by='cogs', ascending=False)
+plt.figure(figsize=(12,6))
+sns.barplot(x='Product line', y='cogs', data=product_cogs)
+plt.title('Product cost', fontsize=16, color = 'k')
+plt.show()
+
+#Correlation between variables
+sns.heatmap(np.round(new_pos.corr(),2), annot=True, cmap = 'rainbow')
+plt.title('Correlation between variables', fontsize=14, color = 'k')
+plt.show()
+
+#Customer Rating Distribution
+sns.displot(new_pos['Rating'], kde=True)
+plt.axvline(x=np.mean(new_pos['Rating']), c='red', ls='--', label='mean')
+plt.axvline(x=np.percentile(new_pos['Rating'],25),c='green', ls='--', label = '25th percentile:Q1')
+plt.axvline(x=np.percentile(new_pos['Rating'],75),c='orange', ls='--',label = '75th percentile:Q3' )
+plt.title("Customer Rating Distribution", fontsize=16, color = 'k')
+plt.legend(bbox_to_anchor=(1,1))
+plt.show()
+
+#Gross Income for Each Branch
+sns.boxplot(x=new_pos['Branch'], order = ['A','B','C'], y=new_pos['gross income'])
+plt.ylabel('Gross income ($)')
+plt.xlabel('Branch')
+plt.title("Gross Income for Each Branch", fontsize=16, color = 'k')
+plt.show()
+
+#Gross Income for Each Branch (Line Graph)
+branch_monthly_grossincome = new_pos.loc[:, ['Branch', 'gross income','Date']]
+branch_monthly_grossincome['Month'] = branch_monthly_grossincome['Date'].dt.month_name().str.slice(stop=3)
+months = ["Jan", "Feb", "Mar"]
+branch_monthly_grossincome['Month'] = pd.Categorical(branch_monthly_grossincome['Month'], categories=months, ordered=True)
+branch_monthly_grossincome.sort_values('Month')
+results = branch_monthly_grossincome.groupby(['Month','Branch']).sum()
+
+results.unstack().plot(color='red', marker='o')
+plt.ylabel('Gross income ($)')
+
+legend = ['Branch A', 'Branch B', 'Branch C']
+plt.legend(legend, bbox_to_anchor=(1,1), loc="upper left")
+plt.title("Gross Income for Each Branch Across Time", fontsize=16, color = 'k')
+plt.show()
+
+#Gender and Gross Income Distribution
+sns.boxplot(x=new_pos['Gender'], y=new_pos['gross income'])
+plt.ylabel('Gross income ($)')
+plt.title("Gross Income Distribution based on Gender", fontsize=16, color = 'k')
+plt.show()
+
 #Time trend in gross income
 fig, ax = plt.subplots(figsize=(9,9))
-new_pos['Date'] = pd.to_datetime(new_pos['Date'], errors='coerce')
 date = new_pos.groupby(new_pos.Date).mean().index
 gross_income = new_pos.groupby(new_pos.Date).mean()['gross income']
 sns.lineplot(x= date, y = gross_income, ax=ax, color='red')
@@ -186,23 +274,4 @@ annot_max(date, gross_income)
 sns.set_palette("PuBuGn_d")
 plt.title('Gross income', fontsize=16, color = 'k')
 plt.tight_layout
-plt.show()
-
-#Gross income by product
-product_income=new_pos[["Product line", "gross income"]].groupby(['Product line'], as_index=False).sum().sort_values(by='gross income', ascending=False)
-plt.figure(figsize=(12,6))
-sns.barplot(x='Product line', y='gross income', data=product_income)
-plt.title('Gross income by product', fontsize=16, color = 'k')
-plt.show()
-
-#Product cost
-product_cogs=new_pos[["Product line", "cogs"]].groupby(['Product line'], as_index=False).sum().sort_values(by='cogs', ascending=False)
-plt.figure(figsize=(12,6))
-sns.barplot(x='Product line', y='cogs', data=product_cogs)
-plt.title('Product cost', fontsize=16, color = 'k')
-plt.show()
-
-#Correlation between variables
-sns.heatmap(np.round(new_pos.corr(),2), annot=True, cmap = 'rainbow')
-plt.title('Correlation between variables', fontsize=14, color = 'k')
 plt.show()
