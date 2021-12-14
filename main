@@ -13,7 +13,7 @@ pos = pd.read_csv('supermarket_sales.csv')
 pos.index += 1
 pos.head()
 
-# to find missing values
+# functions defined to find missing transactional data
 def find_quantity():
     quantity = (new_pos['gross income'] + new_pos['cogs'])/new_pos['Unit price']
     return quantity
@@ -27,7 +27,7 @@ def find_cogs():
     cogs = new_pos['Unit price'] * new_pos['Quantity'] - new_pos['gross income']
     return cogs
 
-#dropping entire rows with NaN/NA for branch, product line and date
+# removing rows with null values that cannot be populated
 new_pos = pos.dropna(how='any', subset=['Branch','Product line', 'Date'])
 
 #populating NA value in rating with mean
