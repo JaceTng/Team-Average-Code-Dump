@@ -76,8 +76,8 @@ total_month_sales = new_pos.loc[:, ['Branch', 'Product line', 'Total','Date']]
 total_month_sales['Month'] = total_month_sales['Date'].dt.month
 results = total_month_sales.groupby('Month').sum()
 months = range(1,4)
-color = ['red', 'pink', 'purple']
-plt.bar(months,results['Total'], width = 0.5, color = color)
+color = ['red', 'pink', 'cyan']
+plt.bar(months,results['Total'], width = 0.5, color = color, edgecolor='black', hatch='/')
 my_xticks = ['Jan','Feb','Mar']
 plt.xticks(months, my_xticks)
 plt.ylabel('Total sales ($)')
@@ -169,16 +169,17 @@ ewallet = new_pos['Payment'][new_pos['Payment'].str.contains('Ewallet')].count()
 credit_card = new_pos['Payment'][new_pos['Payment'].str.contains('Credit card')].count()
 payment_type = np.array([cash, ewallet, credit_card])
 payment_labels = ['Cash', 'E-wallet', ' Credit card']
-colors = ('cyan', 'Aquamarine', 'gold')
+colors = ('#da68a0', '#77c593', '#ed3572')
 explodeTuple = (0.1, 0.0, 0.0)
 fig, ax = plt.subplots(figsize=(6, 6))
-patches, texts, pcts = ax.pie(payment_type, labels = payment_labels, colors = colors, explode=explodeTuple, pctdistance=0.75, autopct='%1.2f%%', shadow = True, startangle=120)
+patches, texts, pcts = ax.pie(payment_type, labels = payment_labels, colors = colors, textprops={'fontsize': 14}, explode=explodeTuple, pctdistance=0.75, autopct='%1.2f%%', shadow = True, startangle=120)
 centre_circle = plt.Circle((0, 0), 0.60, fc='white')
 for i, patch in enumerate(patches):
   texts[i].set_color(patch.get_facecolor())
-plt.setp(pcts, color='Navy')
-plt.setp(texts, fontweight=300)
+plt.setp(pcts, color='yellow', fontweight=800)
+plt.setp(texts, fontweight=500)
 ax.set_title('Payment Type', fontsize=16, color = 'Red')
+ax.tick_params(axis='x', labelsize=20)
 plt.tight_layout()
 fig = plt.gcf()
 fig.gca().add_artist(centre_circle)
@@ -193,7 +194,7 @@ plt.show()
 
 #Product Sales per Hour for each branch
 find_total_quantity = new_pos.groupby(['Hour','Branch']).sum()
-sns.lineplot(x = 'Hour',  y = 'Quantity',data = find_total_quantity, hue = 'Branch', palette="flare").set_title("Branch Product Sales per Hour", fontdict = { 'fontsize': 16})
+sns.lineplot(x = 'Hour',  y = 'Quantity',data = find_total_quantity, hue = 'Branch', palette="plasma").set_title("Branch Product Sales per Hour", fontdict = { 'fontsize': 16})
 plt.legend(legend, bbox_to_anchor=(1,1))
 plt.show()
 
@@ -212,7 +213,7 @@ plt.title('Product cost', fontsize=16, color = 'k')
 plt.show()
 
 #Correlation between variables
-sns.heatmap(np.round(new_pos.corr(),2), annot=True, cmap = 'Wistia')
+sns.heatmap(np.round(new_pos.corr(),2), annot=True, cmap = 'winter', annot_kws={"fontsize":12})
 plt.title('Correlation between variables', fontsize=16, color = 'k')
 plt.show()
 
@@ -226,7 +227,15 @@ plt.legend(bbox_to_anchor=(1,1))
 plt.show()
 
 #Gross Income for Each Branch
-sns.boxplot(x=new_pos['Branch'], order = ['A','B','C'], y=new_pos['gross income'], palette = 'autumn')
+flierprops = dict(marker='*', markerfacecolor='None', markersize=4,  markeredgecolor='blue')
+PROPS = {
+    'boxprops':{'facecolor':'none', 'edgecolor':'red'},
+    'medianprops':{'color':'green'},
+    'whiskerprops':{'color':'blue'},
+    'capprops':{'color':'orange'}
+}
+sns.boxplot(x=new_pos['Branch'], order = ['A','B','C'], y=new_pos['gross income'], 
+            **PROPS, flierprops = flierprops)
 plt.ylabel('Gross income ($)')
 plt.xlabel('Branch')
 plt.title("Gross Income for Each Branch", fontsize=16, color = 'k')
@@ -249,7 +258,7 @@ plt.title("Gross Income for Each Branch Across Time", fontsize=16, color = 'k')
 plt.show()
 
 #Gender and Gross Income Distribution
-sns.boxplot(x=new_pos['Gender'], y=new_pos['gross income'], palette = 'prism')
+sns.boxplot(x=new_pos['Gender'], y=new_pos['gross income'], palette = 'prism', flierprops = flierprops)
 plt.ylabel('Gross income ($)')
 plt.title("Gross Income Distribution based on Gender", fontsize=16, color = 'k')
 plt.show()
@@ -266,7 +275,7 @@ plt.tight_layout
 plt.show()
 
 #Spending pattern based on gender
-plt.figure(figsize=(12, 6))
+plt.figure(figsize=(14, 6))
 plt.title('Total Monthly transaction by Gender', fontsize=16, color = 'k')
 sns.countplot(x=new_pos['Product line'], hue = new_pos.Gender, palette='coolwarm')
 plt.legend(bbox_to_anchor=(1,1))
