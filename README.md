@@ -137,11 +137,11 @@ plt.show()
 
 #rating for each branch #box plot
 colors = ('Purple', 'Blue', 'Red')
-sns.boxplot(data=new_pos, x='Branch', y='Rating',order=["A", "B","C"], width = 0.5, palette=colors, medianprops=dict(color="gold")).set_title('Branch rating', fontdict = { 'fontsize': 14})
+sns.boxplot(data=new_pos, x='Branch', y='Rating',order=["A", "B","C"], width = 0.5, palette=colors, medianprops=dict(color="gold")).set_title('Branch rating', fontdict = { 'fontsize': 16})
 plt.show()
 
 #Product purchases
-sns.boxplot(data=new_pos, x='Quantity', y='Product line', palette = 'Spectral', width = 0.5).set_title('Product purchases', fontdict = { 'fontsize': 14})
+sns.boxplot(data=new_pos, x='Quantity', y='Product line', palette = 'Spectral', width = 0.5).set_title('Product purchases', fontdict = { 'fontsize': 16})
 plt.show()
 
 #Member demographic
@@ -188,12 +188,13 @@ plt.show()
 new_pos['Hour'] = new_pos['Time'].dt.hour
 new_pos['Hour'].unique()
 find_total_quantity = new_pos.groupby(['Hour']).sum()
-sns.lineplot(x = 'Hour',  y = 'Quantity',data = find_total_quantity, color = '#D100D1').set_title("Product Sales per Hour")
+sns.lineplot(x = 'Hour',  y = 'Quantity',data = find_total_quantity, color = '#D100D1').set_title("Product Sales per Hour", fontdict = { 'fontsize': 16})
 plt.show()
 
 #Product Sales per Hour for each branch
 find_total_quantity = new_pos.groupby(['Hour','Branch']).sum()
-sns.lineplot(x = 'Hour',  y = 'Quantity',data = find_total_quantity, hue = 'Branch', palette="flare").set_title("Branch Product Sales per Hour")
+sns.lineplot(x = 'Hour',  y = 'Quantity',data = find_total_quantity, hue = 'Branch', palette="flare").set_title("Branch Product Sales per Hour", fontdict = { 'fontsize': 16})
+plt.legend(legend, bbox_to_anchor=(1,1))
 plt.show()
 
 #Demand for product line
@@ -204,7 +205,7 @@ legend_color = ['red', 'pink', 'purple']
 quantity_branch.plot(kind='barh', color = legend_color)
 plt.xlabel('Quantity')
 legend = ['Branch A', 'Branch B', 'Branch C']
-plt.legend(legend, bbox_to_anchor=(1,1), loc="upper left")
+plt.legend(legend, bbox_to_anchor=(1,1))
 plt.title('Demand for product line', fontsize=16, color = 'k')
 plt.show()
 
@@ -224,7 +225,7 @@ plt.show()
 
 #Correlation between variables
 sns.heatmap(np.round(new_pos.corr(),2), annot=True, cmap = 'Wistia')
-plt.title('Correlation between variables', fontsize=14, color = 'k')
+plt.title('Correlation between variables', fontsize=16, color = 'k')
 plt.show()
 
 #Customer Rating Distribution
@@ -278,7 +279,7 @@ plt.show()
 
 #Spending pattern based on gender
 plt.figure(figsize=(12, 6))
-plt.title('Total Monthly transaction by Gender')
+plt.title('Total Monthly transaction by Gender', fontsize=16, color = 'k')
 sns.countplot(x=new_pos['Product line'], hue = new_pos.Gender, palette='coolwarm')
 plt.legend(bbox_to_anchor=(1,1))
 plt.show()
@@ -290,7 +291,7 @@ new_pos['Weekday'] = pd.Categorical(new_pos['Weekday'], categories=weekday_sorte
 new_pos = new_pos.sort_values('Weekday')
 
 fig, ax = plt.subplots(figsize=(8, 6))
-plt.title('Daily Sales by Day of the Week')
+plt.title('Daily Sales by Day of the Week', fontsize=16, color = 'k')
 sns.countplot(x=new_pos['Weekday'], palette = 'Spectral')
 ax.xaxis.label.set_color('red')
 
@@ -299,10 +300,10 @@ plt.show()
 #Rating of products
 xdata = [0,1,2,3,4,5,6,7,8,9,10]
 plt.figure(figsize = (9,6))
-sns.barplot(y = new_pos['Product line'], x = new_pos['Rating'], palette = "Paired")
+sns.barplot(y = new_pos['Product line'], x = new_pos['Rating'], palette = "Paired").set_title('Product Rating', fontdict = { 'fontsize': 16})
 plt.xticks(xdata)
 plt.show()
 
 #Quantity purchased by product
-sns.boxenplot(y = 'Product line', x = 'Quantity', data=new_pos, palette = "rainbow" )
+sns.boxenplot(y = 'Product line', x = 'Quantity', data=new_pos, palette = "rainbow" ).set_title('Quantity purchased by product', fontdict = { 'fontsize': 16})
 plt.show()
