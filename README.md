@@ -87,7 +87,7 @@ plt.show()
 
 #Branch sales for each month
 results = total_month_sales.groupby(['Month','Branch']).sum()
-results.unstack().plot()
+results.unstack().plot(color = ['#003366', '#ff7373', '#ff80ed'], marker='D')
 plt.ylabel(' Total sales ($)')
 plt.title("Branch sales for each month", fontsize=16, color = 'k')
 legend = ['Branch A', 'Branch B', 'Branch C']
@@ -280,6 +280,7 @@ plt.show()
 plt.figure(figsize=(12, 6))
 plt.title('Total Monthly transaction by Gender')
 sns.countplot(x=new_pos['Product line'], hue = new_pos.Gender, palette='coolwarm')
+plt.legend(bbox_to_anchor=(1,1))
 plt.show()
 
 #Which day of the week has maximum sales 
@@ -288,9 +289,11 @@ weekday_sorted = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Satur
 new_pos['Weekday'] = pd.Categorical(new_pos['Weekday'], categories=weekday_sorted, ordered=True)
 new_pos = new_pos.sort_values('Weekday')
 
-plt.figure(figsize=(8, 6))
+fig, ax = plt.subplots(figsize=(8, 6))
 plt.title('Daily Sales by Day of the Week')
 sns.countplot(x=new_pos['Weekday'], palette = 'Spectral')
+ax.xaxis.label.set_color('red')
+
 plt.show()
 
 #Rating of products
