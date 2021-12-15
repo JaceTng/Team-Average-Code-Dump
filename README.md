@@ -197,18 +197,6 @@ sns.lineplot(x = 'Hour',  y = 'Quantity',data = find_total_quantity, hue = 'Bran
 plt.legend(legend, bbox_to_anchor=(1,1))
 plt.show()
 
-#Demand for product line
-total_month_sales = new_pos.loc[:, ['Branch', 'Product line', 'Quantity']]
-results = total_month_sales.groupby(['Product line','Branch']).sum()
-quantity_branch = results.unstack()
-legend_color = ['red', 'pink', 'purple']
-quantity_branch.plot(kind='barh', color = legend_color)
-plt.xlabel('Quantity')
-legend = ['Branch A', 'Branch B', 'Branch C']
-plt.legend(legend, bbox_to_anchor=(1,1))
-plt.title('Demand for product line', fontsize=16, color = 'k')
-plt.show()
-
 #Gross income by product
 product_income=new_pos[["Product line", "gross income"]].groupby(['Product line'], as_index=False).sum().sort_values(by='gross income', ascending=False)
 plt.figure(figsize=(12,6))
