@@ -86,8 +86,11 @@ plt.title("Month sales", fontsize=16, color = 'k')
 plt.show()
 
 #Branch sales for each month
+results['Month'] = total_month_sales['Date'].dt.month
 results = total_month_sales.groupby(['Month','Branch']).sum()
-results.unstack().plot(color = ['#003366', '#ff7373', '#ff80ed'], marker='D')
+results.unstack().plot(color = ['#003366', '#77c593', '#ff80ed'], marker='D')
+my_xticks = ['Jan','Feb','Mar']
+plt.xticks(months, my_xticks)
 plt.ylabel(' Total sales ($)')
 plt.title("Branch sales for each month", fontsize=16, color = 'k')
 legend = ['Branch A', 'Branch B', 'Branch C']
