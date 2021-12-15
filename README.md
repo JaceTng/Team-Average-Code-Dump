@@ -137,11 +137,11 @@ plt.show()
 
 #rating for each branch #box plot
 colors = ('Purple', 'Blue', 'Red')
-sns.boxplot(data=new_pos, x='Branch', y='Rating',order=["A", "B","C"], width = 0.5, palette=colors, medianprops=dict(color="gold")).set(title = 'Branch rating')
+sns.boxplot(data=new_pos, x='Branch', y='Rating',order=["A", "B","C"], width = 0.5, palette=colors, medianprops=dict(color="gold")).set_title('Branch rating', fontdict = { 'fontsize': 14})
 plt.show()
 
 #Product purchases
-sns.boxplot(data=new_pos, x='Quantity', y='Product line', palette = 'Spectral', width = 0.5).set(title = 'Product purchases')
+sns.boxplot(data=new_pos, x='Quantity', y='Product line', palette = 'Spectral', width = 0.5).set_title('Product purchases', fontdict = { 'fontsize': 14})
 plt.show()
 
 #Member demographic
