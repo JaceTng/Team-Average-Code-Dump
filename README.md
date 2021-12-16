@@ -157,7 +157,7 @@ wedges, texts = plt.pie(customer_type, labels = member_labels, startangle = 90, 
 plt.title('Membership', fontsize=16, color = 'k')
 
 positions = [(-0.5,0),(0.5,0)]
-zooms = [0.12,0.35]
+zooms = [0.25,0.35]
 
 for i in range(2):
     fn = "{}.png".format(member_labels[i].lower())
