@@ -5,9 +5,6 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import PathPatch
 from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 import seaborn as sns; sns.set()
-import datetime 
-from datetime import date
-import calendar
 
 #reading file
 pos = pd.read_csv('supermarket_sales.csv')
