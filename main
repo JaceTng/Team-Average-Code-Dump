@@ -89,10 +89,155 @@ new_pos['cogs'].fillna(find_cogs(), inplace=True)
 new_pos['Date'] = pd.to_datetime(new_pos['Date'], errors='coerce')
 new_pos['Time'] = pd.to_datetime(new_pos['Time'])
 
+#sales by gender
+male = new_pos['Gender'][new_pos['Gender'].str.contains('Male')].count()
+female = new_pos['Gender'][new_pos['Gender'].str.contains('Female')].count()
+gender = np.array([male, female])
+labels = ['Male', 'Female']
+plt.gca().axis("equal")
+wedges, texts = plt.pie(gender, labels = labels, startangle = 90, wedgeprops = { 'linewidth': 2, "edgecolor" :"k","fill":False})
+plt.title("Gender", fontsize=16, color = 'k')
+positions = [(-0.35,0),(0.43,0)]
+zooms = [0.17,0.115]
+
+for i in range(2):
+    fn = "{}.png".format(labels[i].lower())
+    img_to_pie(fn, wedges[i], xy=positions[i], zoom=zooms[i] )
+    wedges[i].set_zorder(10)
+    
+plt.savefig("sales by gender.png",dpi=300,bbox_inches='tight')
+plt.show()
+
+#Member demographic
+member = new_pos['Customer type'][new_pos['Customer type'].str.contains('Member')].count()
+non_member = new_pos['Customer type'][new_pos['Customer type'].str.contains('Normal')].count()
+customer_type = np.array([member, non_member])
+member_labels = ['Member', 'Non member']
+plt.gca().axis("equal")
+wedges, texts = plt.pie(customer_type, labels = member_labels, startangle = 90, wedgeprops = { 'linewidth': 2, "edgecolor" :"k","fill":False})
+plt.title('Membership', fontsize=16, color = 'k')
+positions = [(-0.5,0),(0.5,0)]
+zooms = [0.15,0.11]
+
+for i in range(2):
+    fn = "{}.png".format(member_labels[i].lower())
+    img_to_pie(fn, wedges[i], xy=positions[i], zoom=zooms[i] )
+    wedges[i].set_zorder(10)
+    
+plt.savefig("Membership.png",dpi=300,bbox_inches='tight')    
+plt.show()
+
 #Correlation between variables
 sns.heatmap(np.round(new_pos.corr(),2), annot=True, cmap = 'winter', annot_kws={"fontsize":12})
 plt.title('Correlation between variables', fontsize=16, color = 'k')
 plt.savefig("Correlation.png",dpi=300,bbox_inches='tight')
+plt.show()
+
+#Payment type
+cash = new_pos['Payment'][new_pos['Payment'].str.contains('Cash')].count()
+ewallet = new_pos['Payment'][new_pos['Payment'].str.contains('Ewallet')].count()
+credit_card = new_pos['Payment'][new_pos['Payment'].str.contains('Credit card')].count()
+payment_type = np.array([cash, ewallet, credit_card])
+payment_labels = ['Cash', 'E-wallet', ' Credit card']
+colors = ('#da68a0', '#77c593', '#ed3572')
+explodeTuple = (0.1, 0.0, 0.0)
+fig, ax = plt.subplots(figsize=(6, 6))
+patches, texts, pcts = ax.pie(payment_type, labels = payment_labels, colors = colors, textprops={'fontsize': 14}, explode=explodeTuple, pctdistance=0.75, autopct='%1.2f%%', shadow = True, startangle=120)
+centre_circle = plt.Circle((0, 0), 0.60, fc='white')
+for i, patch in enumerate(patches):
+  texts[i].set_color(patch.get_facecolor())
+plt.setp(pcts, color='yellow', fontweight=800)
+plt.setp(texts, fontweight=500)
+ax.set_title('Payment Type', fontsize=16, color = 'Red')
+ax.tick_params(axis='x', labelsize=20)
+plt.tight_layout()
+fig = plt.gcf()
+fig.gca().add_artist(centre_circle)
+plt.savefig("payment type.png",dpi=120,bbox_inches='tight')    
+plt.show()
+
+#Product sales
+product_line = new_pos.groupby('Product line')
+quantity = product_line.sum()['Quantity']
+products = [product for product, df in product_line]
+fig, ax = plt.subplots(figsize=(12,6))
+color = ['red', 'pink', 'purple', 'orange', 'green', 'blue']
+ax.barh(products, quantity, color = color)
+for i, v in enumerate(quantity):
+    ax.text(v + 3, i, int(v))    
+plt.xlabel('Sales quantity')
+plt.title("Product sales", fontsize=16, color = 'k')
+plt.savefig("Product sales.png",dpi=300,bbox_inches='tight')
+plt.show()
+
+#Total Product sales
+product_line = new_pos.groupby('Product line')
+quantity = product_line.sum()['Total']
+products = [product for product, df in product_line]
+fig, ax = plt.subplots(figsize=(12,6))
+color = ['red', 'pink', 'purple', 'orange', 'green', 'blue']
+ax.barh(products, quantity, color = color)
+for i, v in enumerate(quantity):
+    ax.text(v + 3, i, int(v))    
+plt.xlabel('Total Sales')
+plt.title("Total Product Sales", fontsize=16, color = 'k')
+plt.savefig("Total Product Sales.png",dpi=300,bbox_inches='tight')
+plt.show()
+
+#Demand for product line
+total_month_sales = new_pos.loc[:, ['Branch', 'Product line', 'Quantity']]
+results = total_month_sales.groupby(['Product line','Branch']).sum()
+legend_color = ['red', 'pink', 'purple']
+ax = results.unstack().plot.barh(color = legend_color)
+
+for bar in ax.patches:
+  # The text annotation for each bar should be its width.
+  bar_value = bar.get_width()
+  # Format to no decimal point
+  text = f'{bar_value:.0f}'
+  # This will give the middle of each bar on the y-axis.
+  text_x = bar.get_y() + bar.get_height() / 2
+  # get_x() is where the bar starts so we add the width to it.
+  text_y = bar.get_x() + bar_value*1.01
+  ax.text(text_y, text_x, text, ha='left', va='center', size = 7)
+    
+plt.xlabel('Quantity')
+legend = ['Branch A', 'Branch B', 'Branch C']
+plt.legend(legend, bbox_to_anchor=(1,1), loc="upper left", )
+plt.title('Demand for product line', fontsize=16, color = 'k')
+plt.savefig("Product demand.png",dpi=300,bbox_inches='tight')
+plt.show()
+
+#Product purchases
+sns.boxplot(data=new_pos, x='Quantity', y='Product line', palette = 'Spectral', width = 0.5).set_title('Product purchases', fontdict = { 'fontsize': 16})
+plt.savefig("Product purchases.png",dpi=300,bbox_inches='tight')
+plt.show()
+
+#Product cost
+product_cogs=new_pos[["Product line", "cogs"]].groupby(['Product line'], as_index=False).sum().sort_values(by='cogs', ascending=False)
+plt.figure(figsize=(12,6))
+p = sns.barplot(x='Product line', y='cogs', data=product_cogs, palette = "Accent")
+show_values(p)
+plt.title('Product cost', fontsize=16, color = 'k')
+plt.savefig("product cost.png",dpi=300,bbox_inches='tight')  
+plt.show()
+
+#Average Product Cost
+product_cogs=new_pos[["Product line", "cogs"]].groupby(['Product line'], as_index=False).mean().sort_values(by='cogs', ascending=False)
+plt.figure(figsize=(12,6))
+p = sns.barplot(x='Product line', y='cogs', data=product_cogs, palette = "Accent")
+show_values(p)
+plt.title('Average Product Cost', fontsize=16, color = 'k')
+plt.savefig("Average Product Cost.png",dpi=300,bbox_inches='tight')  
+plt.show()
+
+#Spending pattern based on gender
+plt.figure(figsize=(14, 6))
+plt.title('Total Monthly transaction by Gender', fontsize=16, color = 'k')
+p = sns.countplot(x=new_pos['Product line'], hue = new_pos.Gender, palette='coolwarm')
+show_values(p)
+plt.legend(bbox_to_anchor=(1,1))
+plt.savefig("gender spending.png",dpi=300,bbox_inches='tight') 
 plt.show()
 
 #month sales
@@ -121,7 +266,6 @@ plt.savefig("Month sales.png",dpi=300,bbox_inches='tight')
 plt.show()
 
 #Branch sales for each month
-results['Month'] = total_month_sales['Date'].dt.month
 results = total_month_sales.groupby(['Month','Branch']).sum()
 results.unstack().plot(color = ['#003366', '#77c593', '#ff80ed'], marker='D')
 my_xticks = ['Jan','Feb','Mar']
@@ -133,114 +277,53 @@ plt.legend(legend, bbox_to_anchor=(1,1), loc="upper left")
 plt.savefig("Branch month sales.png",dpi=300,bbox_inches='tight')
 plt.show()
 
-#Demand for product line
-total_month_sales = new_pos.loc[:, ['Branch', 'Product line', 'Quantity']]
-results = total_month_sales.groupby(['Product line','Branch']).sum()
-legend_color = ['red', 'pink', 'purple']
-ax = results.unstack().plot.barh(color = legend_color)
+#filters for each branch
+filt_A = (total_month_sales['Branch'] == 'A')
+filt_B = (total_month_sales['Branch'] == 'B')
+filt_C = (total_month_sales['Branch'] == 'C')
 
-for bar in ax.patches:
-  # The text annotation for each bar should be its width.
-  bar_value = bar.get_width()
-  # Format to no decimal point
-  text = f'{bar_value:.0f}'
-  # This will give the middle of each bar on the y-axis.
-  text_x = bar.get_y() + bar.get_height() / 2
-  # get_x() is where the bar starts so we add the width to it.
-  text_y = bar.get_x() + bar_value*1.01
-  ax.text(text_y, text_x, text, ha='left', va='center', size = 7)
-    
-plt.xlabel('Quantity')
-legend = ['Branch A', 'Branch B', 'Branch C']
-plt.legend(legend, bbox_to_anchor=(1,1), loc="upper left", )
-plt.title('Demand for product line', fontsize=16, color = 'k')
-plt.savefig("Product demand.png",dpi=300,bbox_inches='tight')
+#Product Sales across 3 months
+results = total_month_sales.groupby(['Month','Product line']).sum()
+color = ['#d72631', '#077b8a', '#5c3c92', '#ed3572','#ff6e40','#7a2048']
+results.unstack().plot(color = color, marker='D')
+plt.xticks(months, my_xticks)
+plt.ylabel(' Total sales ($)')
+plt.title("Product Sales across 3 months", fontsize=16, color = 'k')
+plt.legend(legend, bbox_to_anchor=(1,1), loc="upper left")
+plt.savefig("Product Sales across 3 months.png",dpi=300,bbox_inches='tight')
 plt.show()
 
-#Product sales
-product_line = new_pos.groupby('Product line')
-quantity = product_line.sum()['Quantity']
-products = [product for product, df in product_line]
-fig, ax = plt.subplots(figsize=(12,6))
-color = ['red', 'pink', 'purple', 'orange', 'green', 'blue']
-ax.barh(products, quantity, color = color)
-for i, v in enumerate(quantity):
-    ax.text(v + 3, i, int(v))    
-plt.xlabel('Sales quantity')
-plt.title("Product sales", fontsize=16, color = 'k')
-plt.savefig("Product sales.png",dpi=300,bbox_inches='tight')
+#Branch A Product sales
+results = total_month_sales[filt_A].groupby(['Month','Product line']).sum()
+results.unstack().plot(color = color, marker='D')
+my_xticks = ['Jan','Feb','Mar']
+plt.xticks(months, my_xticks)
+plt.ylabel(' Total sales ($)')
+plt.title("Branch A Product Sales", fontsize=16, color = 'k')
+legend = ['Electronic accessories','Fashion accessories','Food and beverages',
+          'Health and beauty','Home and lifestyle','Sports and travel']
+plt.legend(legend, bbox_to_anchor=(1,1), loc="upper left")
+plt.savefig("Branch A Product Sales.png",dpi=300,bbox_inches='tight')
 plt.show()
 
-#sales by gender
-male = new_pos['Gender'][new_pos['Gender'].str.contains('Male')].count()
-female = new_pos['Gender'][new_pos['Gender'].str.contains('Female')].count()
-gender = np.array([male, female])
-labels = ['Male', 'Female']
-plt.gca().axis("equal")
-wedges, texts = plt.pie(gender, labels = labels, startangle = 90, wedgeprops = { 'linewidth': 2, "edgecolor" :"k","fill":False})
-plt.title("Gender", fontsize=16, color = 'k')
-positions = [(-0.35,0),(0.43,0)]
-zooms = [0.17,0.115]
-
-for i in range(2):
-    fn = "{}.png".format(labels[i].lower())
-    img_to_pie(fn, wedges[i], xy=positions[i], zoom=zooms[i] )
-    wedges[i].set_zorder(10)
-    
-plt.savefig("sales by gender.png",dpi=300,bbox_inches='tight')
+#Branch B Product sales
+results = total_month_sales[filt_B].groupby(['Month','Product line']).sum()
+results.unstack().plot(color = color, marker='D')
+plt.xticks(months, my_xticks)
+plt.ylabel(' Total sales ($)')
+plt.title("Branch B Product Sales", fontsize=16, color = 'k')
+plt.legend(legend, bbox_to_anchor=(1,1), loc="upper left")
+plt.savefig("Branch B Product Sales.png",dpi=300,bbox_inches='tight')
 plt.show()
 
-#rating for each branch #box plot
-colors = ('#e52165', 'Blue', 'Red')
-sns.boxplot(data=new_pos, x='Branch', y='Rating',order=["A", "B","C"], width = 0.5, palette=colors, medianprops=dict(color="gold")).set_title('Branch rating', fontdict = { 'fontsize': 16})
-plt.savefig("Branch rating.png",dpi=300,bbox_inches='tight')
-plt.show()
-
-#Product purchases
-sns.boxplot(data=new_pos, x='Quantity', y='Product line', palette = 'Spectral', width = 0.5).set_title('Product purchases', fontdict = { 'fontsize': 16})
-plt.savefig("Product purchases.png",dpi=300,bbox_inches='tight')
-plt.show()
-
-#Member demographic
-member = new_pos['Customer type'][new_pos['Customer type'].str.contains('Member')].count()
-non_member = new_pos['Customer type'][new_pos['Customer type'].str.contains('Normal')].count()
-customer_type = np.array([member, non_member])
-member_labels = ['Member', 'Non member']
-plt.gca().axis("equal")
-wedges, texts = plt.pie(customer_type, labels = member_labels, startangle = 90, wedgeprops = { 'linewidth': 2, "edgecolor" :"k","fill":False})
-plt.title('Membership', fontsize=16, color = 'k')
-positions = [(-0.5,0),(0.5,0)]
-zooms = [0.15,0.11]
-
-for i in range(2):
-    fn = "{}.png".format(member_labels[i].lower())
-    img_to_pie(fn, wedges[i], xy=positions[i], zoom=zooms[i] )
-    wedges[i].set_zorder(10)
-    
-plt.savefig("Membership.png",dpi=300,bbox_inches='tight')    
-plt.show()
-
-#Payment type
-cash = new_pos['Payment'][new_pos['Payment'].str.contains('Cash')].count()
-ewallet = new_pos['Payment'][new_pos['Payment'].str.contains('Ewallet')].count()
-credit_card = new_pos['Payment'][new_pos['Payment'].str.contains('Credit card')].count()
-payment_type = np.array([cash, ewallet, credit_card])
-payment_labels = ['Cash', 'E-wallet', ' Credit card']
-colors = ('#da68a0', '#77c593', '#ed3572')
-explodeTuple = (0.1, 0.0, 0.0)
-fig, ax = plt.subplots(figsize=(6, 6))
-patches, texts, pcts = ax.pie(payment_type, labels = payment_labels, colors = colors, textprops={'fontsize': 14}, explode=explodeTuple, pctdistance=0.75, autopct='%1.2f%%', shadow = True, startangle=120)
-centre_circle = plt.Circle((0, 0), 0.60, fc='white')
-for i, patch in enumerate(patches):
-  texts[i].set_color(patch.get_facecolor())
-plt.setp(pcts, color='yellow', fontweight=800)
-plt.setp(texts, fontweight=500)
-ax.set_title('Payment Type', fontsize=16, color = 'Red')
-ax.tick_params(axis='x', labelsize=20)
-plt.tight_layout()
-fig = plt.gcf()
-fig.gca().add_artist(centre_circle)
-plt.savefig("payment type.png",dpi=120,bbox_inches='tight')    
+#Branch C Product sales
+results = total_month_sales[filt_C].groupby(['Month','Product line']).sum()
+results.unstack().plot(color = color, marker='D')
+plt.xticks(months, my_xticks)
+plt.ylabel(' Total sales ($)')
+plt.title("Branch C Product Sales", fontsize=16, color = 'k')
+plt.legend(legend, bbox_to_anchor=(1,1), loc="upper left")
+plt.savefig("Branch C Product Sales.png",dpi=300,bbox_inches='tight')
 plt.show()
 
 #Product Sales per Hour
@@ -258,32 +341,27 @@ plt.legend(legend, bbox_to_anchor=(1,1))
 plt.savefig("branch hour sales.png",dpi=300,bbox_inches='tight')    
 plt.show()
 
-#Gross income by product
-product_income=new_pos[["Product line", "gross income"]].groupby(['Product line'], as_index=False).sum().sort_values(by='gross income', ascending=False)
-plt.figure(figsize=(12,6))
-p = sns.barplot(x='Product line', y='gross income', data=product_income, palette = "hls")
+#Which day of the week has maximum sales 
+new_pos['Weekday'] = new_pos['Date'].dt.day_name()
+weekday_sorted = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+new_pos['Weekday'] = pd.Categorical(new_pos['Weekday'], categories=weekday_sorted, ordered=True)
+new_pos = new_pos.sort_values('Weekday')
+fig, ax = plt.subplots(figsize=(8, 6))
+plt.title('Daily Sales by Day of the Week', fontsize=16, color = 'k')
+p = sns.countplot(x=new_pos['Weekday'], palette = 'Spectral')
 show_values(p)
-plt.title('Gross income by product', fontsize=16, color = 'k')
-plt.savefig("product income.png",dpi=300,bbox_inches='tight')    
+plt.savefig("week sales.png",dpi=300,bbox_inches='tight') 
 plt.show()
 
-#Product cost
-product_cogs=new_pos[["Product line", "cogs"]].groupby(['Product line'], as_index=False).sum().sort_values(by='cogs', ascending=False)
-plt.figure(figsize=(12,6))
-p = sns.barplot(x='Product line', y='cogs', data=product_cogs, palette = "Accent")
-show_values(p)
-plt.title('Product cost', fontsize=16, color = 'k')
-plt.savefig("product cost.png",dpi=300,bbox_inches='tight')  
-plt.show()
-
-#Customer Rating Distribution
-sns.displot(new_pos['Rating'], kde=True, color = '#FF66CC')
-plt.axvline(x=np.mean(new_pos['Rating']), c='red', ls='--', label='mean')
-plt.axvline(x=np.percentile(new_pos['Rating'],25),c='green', ls='--', label = '25th percentile:Q1')
-plt.axvline(x=np.percentile(new_pos['Rating'],75),c='blue', ls='--',label = '75th percentile:Q3' )
-plt.title("Customer Rating Distribution", fontsize=16, color = 'k')
-plt.legend(bbox_to_anchor=(1,1))
-plt.savefig("Customer Rating.png",dpi=300,bbox_inches='tight')
+#Time trend in gross income
+fig, ax = plt.subplots(figsize=(9,9))
+date = new_pos.groupby(new_pos.Date).mean().index
+gross_income = new_pos.groupby(new_pos.Date).mean()['gross income']
+sns.lineplot(x= date, y = gross_income, ax=ax, color='red')
+annot_max(date, gross_income)
+plt.title('Gross income', fontsize=16, color = 'k')
+plt.tight_layout
+plt.savefig("Time trend.png",dpi=300,bbox_inches='tight') 
 plt.show()
 
 #Gross Income for Each Branch
@@ -302,7 +380,7 @@ plt.title("Gross Income for Each Branch", fontsize=16, color = 'k')
 plt.savefig("Branch income.png",dpi=300,bbox_inches='tight')  
 plt.show()
 
-#Gross Income for Each Branch (Line Graph)
+#Gross Income for Each Branch Across Time(Line Graph)
 branch_monthly_grossincome = new_pos.loc[:, ['Branch', 'gross income','Date']]
 branch_monthly_grossincome['Month'] = branch_monthly_grossincome['Date'].dt.month_name().str.slice(stop=3)
 months = ["Jan", "Feb", "Mar"]
@@ -319,6 +397,15 @@ plt.title("Gross Income for Each Branch Across Time", fontsize=16, color = 'k')
 plt.savefig("Branch monthly income.png",dpi=300,bbox_inches='tight')  
 plt.show()
 
+#Gross income by product
+product_income=new_pos[["Product line", "gross income"]].groupby(['Product line'], as_index=False).sum().sort_values(by='gross income', ascending=False)
+plt.figure(figsize=(12,6))
+p = sns.barplot(x='Product line', y='gross income', data=product_income, palette = "hls")
+show_values(p)
+plt.title('Gross income by product', fontsize=16, color = 'k')
+plt.savefig("product income.png",dpi=300,bbox_inches='tight')    
+plt.show()
+
 #Gender and Gross Income Distribution
 sns.boxplot(x=new_pos['Gender'], y=new_pos['gross income'], palette = 'prism', flierprops = flierprops)
 plt.ylabel('Gross income ($)')
@@ -326,36 +413,10 @@ plt.title("Gross Income Distribution based on Gender", fontsize=16, color = 'k')
 plt.savefig("gender income.png",dpi=300,bbox_inches='tight') 
 plt.show()
 
-#Time trend in gross income
-fig, ax = plt.subplots(figsize=(9,9))
-date = new_pos.groupby(new_pos.Date).mean().index
-gross_income = new_pos.groupby(new_pos.Date).mean()['gross income']
-sns.lineplot(x= date, y = gross_income, ax=ax, color='red')
-annot_max(date, gross_income)
-plt.title('Gross income', fontsize=16, color = 'k')
-plt.tight_layout
-plt.savefig("Time trend.png",dpi=300,bbox_inches='tight') 
-plt.show()
-
-#Spending pattern based on gender
-plt.figure(figsize=(14, 6))
-plt.title('Total Monthly transaction by Gender', fontsize=16, color = 'k')
-p = sns.countplot(x=new_pos['Product line'], hue = new_pos.Gender, palette='coolwarm')
-show_values(p)
-plt.legend(bbox_to_anchor=(1,1))
-plt.savefig("gender spending.png",dpi=300,bbox_inches='tight') 
-plt.show()
-
-#Which day of the week has maximum sales 
-new_pos['Weekday'] = new_pos['Date'].dt.day_name()
-weekday_sorted = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-new_pos['Weekday'] = pd.Categorical(new_pos['Weekday'], categories=weekday_sorted, ordered=True)
-new_pos = new_pos.sort_values('Weekday')
-fig, ax = plt.subplots(figsize=(8, 6))
-plt.title('Daily Sales by Day of the Week', fontsize=16, color = 'k')
-p = sns.countplot(x=new_pos['Weekday'], palette = 'Spectral')
-show_values(p)
-plt.savefig("week sales.png",dpi=300,bbox_inches='tight') 
+#rating for each branch #box plot
+colors = ('#e52165', 'Blue', 'Red')
+sns.boxplot(data=new_pos, x='Branch', y='Rating',order=["A", "B","C"], width = 0.5, palette=colors, medianprops=dict(color="gold")).set_title('Branch rating', fontdict = { 'fontsize': 16})
+plt.savefig("Branch rating.png",dpi=300,bbox_inches='tight')
 plt.show()
 
 #Rating of products      
@@ -368,7 +429,12 @@ plt.xticks(xdata)
 plt.savefig("Product rating.png",dpi=300,bbox_inches='tight') 
 plt.show()
 
-#Quantity purchased by product
-sns.boxenplot(y = 'Product line', x = 'Quantity', data=new_pos, palette = "rainbow" ).set_title('Quantity purchased by product', fontdict = { 'fontsize': 16})
-plt.savefig("Quantity purchased.png",dpi=300,bbox_inches='tight') 
+#Customer Rating Distribution
+sns.displot(new_pos['Rating'], kde=True, color = '#FF66CC')
+plt.axvline(x=np.mean(new_pos['Rating']), c='red', ls='--', label='mean')
+plt.axvline(x=np.percentile(new_pos['Rating'],25),c='green', ls='--', label = '25th percentile:Q1')
+plt.axvline(x=np.percentile(new_pos['Rating'],75),c='blue', ls='--',label = '75th percentile:Q3' )
+plt.title("Customer Rating Distribution", fontsize=16, color = 'k')
+plt.legend(bbox_to_anchor=(1,1))
+plt.savefig("Customer Rating.png",dpi=300,bbox_inches='tight')
 plt.show()
